@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="distance_options">
+        <item>Any distance</item>
+        <item>Within 2 km</item>
+        <item>Within 5 km</item>
+        <item>Within 10 km</item>
+        <item>Within 25 km</item>
+    </string-array>
+    <string-array name="sort_options">
+        <item>Relevance</item>
+        <item>Rating</item>
+        <item>Price: Low to High</item>
+        <item>Distance</item>
+    </string-array>
+    <string-array name="price_units">
+        <item>per visit</item>
+        <item>per hour</item>
+        <item>per project</item>
+        <item>per session</item>
+        <item>per order</item>
+    </string-array>
+</resources>

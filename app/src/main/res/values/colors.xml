@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand -->
+    <color name="primary">#4338CA</color>
+    <color name="primary_dark">#312E81</color>
+    <color name="primary_container">#E0E7FF</color>
+    <color name="primary_light">#EEF0FF</color>
+    <color name="secondary">#0D9488</color>
+    <color name="secondary_light">#E3F5F3</color>
+    <color name="accent_ring">#5EEAD4</color>
+
+    <!-- Neutrals -->
+    <color name="background">#F7F8FC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F1F2F7</color>
+    <color name="text_primary">#1B1F2A</color>
+    <color name="text_secondary">#5B6272</color>
+    <color name="text_hint">#9AA1B1</color>
+    <color name="divider">#ECEEF4</color>
+    <color name="stroke">#E1E4EC</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="white_70">#B3FFFFFF</color>
+    <color name="scrim">#66000000</color>
+
+    <!-- Semantic -->
+    <color name="success">#16A34A</color>
+    <color name="success_light">#E7F6EC</color>
+    <color name="warning">#B45309</color>
+    <color name="warning_light">#FEF3E2</color>
+    <color name="error">#DC2626</color>
+    <color name="error_light">#FDECEC</color>
+    <color name="info">#2563EB</color>
+    <color name="info_light">#E8F0FE</color>
+    <color name="star">#F5A524</color>
+    <color name="unavailable">#9AA1B1</color>
+
+    <!-- Category accents (used only for small icon tiles) -->
+    <color name="cat_home">#EA580C</color>
+    <color name="cat_home_bg">#FFF1E7</color>
+    <color name="cat_creative">#DB2777</color>
+    <color name="cat_creative_bg">#FCE8F2</color>
+    <color name="cat_education">#2563EB</color>
+    <color name="cat_education_bg">#E8F0FE</color>
+    <color name="cat_tech">#7C3AED</color>
+    <color name="cat_tech_bg">#F1EAFE</color>
+    <color name="cat_lifestyle">#059669</color>
+    <color name="cat_lifestyle_bg">#E6F6F0</color>
+
+    <color name="ic_launcher_background">#4338CA</color>
+</resources>

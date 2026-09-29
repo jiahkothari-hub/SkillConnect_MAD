@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SkillConnect</string>
+    <string name="tagline">Find the right skill. Connect with the right person.</string>
+    <string name="version_label">Version 1.0 · MVP</string>
+
+    <!-- Onboarding -->
+    <string name="onb_title_1">Find Local Talent</string>
+    <string name="onb_desc_1">Discover skilled people around you — from electricians and tutors to designers and makeup artists.</string>
+    <string name="onb_title_2">Compare &amp; Connect</string>
+    <string name="onb_desc_2">View profiles, skills, ratings, prices and portfolios before you decide.</string>
+    <string name="onb_title_3">Book with Confidence</string>
+    <string name="onb_desc_3">Send service requests, track their status and manage all your bookings in one place.</string>
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get Started</string>
+
+    <!-- Auth -->
+    <string name="welcome_back">Welcome back</string>
+    <string name="login_subtitle">Log in to find trusted skilled people near you.</string>
+    <string name="email">Email address</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="full_name">Full name</string>
+    <string name="phone">Phone number</string>
+    <string name="login">Log In</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="or">or</string>
+    <string name="explore_demo">Explore with a demo account</string>
+    <string name="no_account">New to SkillConnect?</string>
+    <string name="create_account">Create account</string>
+    <string name="have_account">Already have an account?</string>
+    <string name="create_your_account">Create your account</string>
+    <string name="register_subtitle">Join a marketplace of trusted local skills.</string>
+    <string name="i_am">I want to…</string>
+    <string name="role_customer_title">Hire a skill</string>
+    <string name="role_customer_desc">Find and book skilled people</string>
+    <string name="role_provider_title">Offer my skill</string>
+    <string name="role_provider_desc">Get discovered and get booked</string>
+    <string name="reset_password">Reset password</string>
+    <string name="reset_password_msg">Enter your account email and we\'ll send you a link to reset your password.</string>
+    <string name="send_link">Send link</string>
+    <string name="demo_banner_title">Demo mode</string>
+    <string name="demo_banner_msg">Firebase is not configured yet, so the app uses sample data stored on this device. Try priya@demo.com / demo123.</string>
+
+    <!-- Common -->
+    <string name="cancel">Cancel</string>
+    <string name="confirm">Confirm</string>
+    <string name="save">Save</string>
+    <string name="retry">Try again</string>
+    <string name="see_all">See all</string>
+    <string name="view_profile">View Profile</string>
+    <string name="delete">Delete</string>
+    <string name="close">Close</string>
+    <string name="share">Share</string>
+    <string name="done">Done</string>
+    <string name="back">Back</string>
+    <string name="loading">Loading…</string>
+    <string name="error_generic">Something went wrong. Check your connection and try again.</string>
+    <string name="error_offline">You\'re offline. Check your connection and try again.</string>
+
+    <!-- Customer home -->
+    <string name="home_subtitle">What do you need help with today?</string>
+    <string name="search_hint">Search for a skill or service…</string>
+    <string name="popular_categories">Popular Categories</string>
+    <string name="nearby_people">Nearby Skilled People</string>
+    <string name="recommended">Recommended for You</string>
+    <string name="finding_people">Finding skilled people near you…</string>
+    <string name="map_banner_title">Explore on the map</string>
+    <string name="map_banner_msg">See skilled people around you</string>
+    <string name="open_map">Open map</string>
+    <string name="default_location">Mumbai (default location)</string>
+    <string name="tap_to_update_location">Tap to use my location</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_bookings">Bookings</string>
+    <string name="nav_saved">Saved</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_requests">Requests</string>
+    <string name="nav_jobs">Jobs</string>
+
+    <!-- Search / list -->
+    <string name="search">Search</string>
+    <string name="recent_searches">Recent searches</string>
+    <string name="popular_searches">Popular searches</string>
+    <string name="clear">Clear</string>
+    <string name="filters">Filters</string>
+    <string name="no_providers_title">No skilled providers found.</string>
+    <string name="no_providers_msg">Try another skill or category.</string>
+    <string name="all_categories">All Categories</string>
+    <string name="categories">Categories</string>
+
+    <!-- Filters -->
+    <string name="filter_category">Category</string>
+    <string name="filter_distance">Distance</string>
+    <string name="filter_price">Price</string>
+    <string name="filter_rating">Minimum rating</string>
+    <string name="filter_availability">Availability</string>
+    <string name="filter_sort">Sort by</string>
+    <string name="price_any">Any price</string>
+    <string name="price_1">Under ₹500</string>
+    <string name="price_2">₹500 – ₹1,000</string>
+    <string name="price_3">₹1,000 – ₹2,000</string>
+    <string name="price_4">₹2,000+</string>
+    <string name="rating_any">Any</string>
+    <string name="rating_4">4.0+</string>
+    <string name="rating_45">4.5+</string>
+    <string name="available_now">Available now</string>
+    <string name="verified_only">Verified providers only</string>
+    <string name="reset">Reset</string>
+    <string name="apply_filters">Apply filters</string>
+
+    <!-- Provider profile -->
+    <string name="verified_provider">Verified Provider</string>
+    <string name="about">About</string>
+    <string name="skills">Skills</string>
+    <string name="portfolio">Portfolio</string>
+    <string name="reviews">Reviews</string>
+    <string name="availability">Availability</string>
+    <string name="book_service">Book Service</string>
+    <string name="contact">Contact</string>
+    <string name="view_on_map">Map</string>
+    <string name="experience">Experience</string>
+    <string name="starting_at">Starting at</string>
+    <string name="rating">Rating</string>
+    <string name="no_portfolio">No portfolio images yet.</string>
+    <string name="no_reviews">No reviews yet. Be the first to book!</string>
+    <string name="available_for_work">Available for new work</string>
+    <string name="currently_busy">Currently busy</string>
+    <string name="listing_unavailable">This listing is currently unavailable.</string>
+
+    <!-- Booking -->
+    <string name="booking_title">Book Service</string>
+    <string name="service">Service</string>
+    <string name="select_date">Select date</string>
+    <string name="select_time">Select time</string>
+    <string name="service_address">Service address</string>
+    <string name="describe_need">Describe what you need</string>
+    <string name="describe_hint">e.g. I need help installing 3 ceiling lights.</string>
+    <string name="send_request">Send Request</string>
+    <string name="send_request_confirm">Send this service request?</string>
+    <string name="price_note">Final price is agreed with the provider after they review your request.</string>
+    <string name="booking_sent">Booking request sent</string>
+    <string name="booking_details">Booking Details</string>
+    <string name="my_bookings">My Bookings</string>
+    <string name="upcoming">Upcoming</string>
+    <string name="completed">Completed</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="no_bookings_title">You don\'t have any bookings yet.</string>
+    <string name="no_bookings_msg">Find a skilled person and send your first request.</string>
+    <string name="find_provider">Find a provider</string>
+    <string name="cancel_booking_confirm">Are you sure you want to cancel this booking?</string>
+
+    <!-- Review -->
+    <string name="leave_review">Leave a Review</string>
+    <string name="review_hint">Share details of your experience (optional)</string>
+    <string name="submit_review">Submit Review</string>
+
+    <!-- Provider dashboard -->
+    <string name="pending_requests">Pending</string>
+    <string name="confirmed_jobs">Confirmed</string>
+    <string name="completed_jobs">Completed</string>
+    <string name="new_requests">New Requests</string>
+    <string name="no_requests_title">No new requests right now.</string>
+    <string name="no_requests_msg">New service requests from customers will appear here.</string>
+    <string name="accept">Accept</string>
+    <string name="decline">Decline</string>
+    <string name="mark_completed">Mark as Completed</string>
+    <string name="complete_profile_title">Complete your profile</string>
+    <string name="complete_profile_msg">Add your service location, description and portfolio so customers can find and trust you.</string>
+    <string name="complete_now">Complete now</string>
+    <string name="no_jobs_title">No jobs here yet.</string>
+    <string name="no_jobs_msg">Accepted and completed jobs will show up here.</string>
+
+    <!-- Profile -->
+    <string name="edit_profile">Edit Profile</string>
+    <string name="manage_portfolio">Manage Portfolio</string>
+    <string name="manage_availability">Manage Availability</string>
+    <string name="service_location">Service Location</string>
+    <string name="saved_providers">Saved Providers</string>
+    <string name="export_bookings">Export Booking History (CSV)</string>
+    <string name="export_profile">Export Profile (TXT)</string>
+    <string name="export_jobs">Export Job History (CSV)</string>
+    <string name="share_profile">Share My Profile</string>
+    <string name="settings">Settings</string>
+    <string name="admin_panel">Admin Panel</string>
+    <string name="logout">Log out</string>
+    <string name="logout_confirm">Are you sure you want to log out?</string>
+    <string name="my_jobs">My Jobs</string>
+
+    <!-- Saved -->
+    <string name="saved">Saved</string>
+    <string name="no_saved_title">No saved providers yet.</string>
+    <string name="no_saved_msg">Save providers you like and find them here.</string>
+    <string name="recently_viewed">Recently viewed</string>
+
+    <!-- Edit provider -->
+    <string name="professional_title">Professional title (primary skill)</string>
+    <string name="category">Category</string>
+    <string name="add_skill">Add a skill</string>
+    <string name="experience_years">Experience (years)</string>
+    <string name="starting_price">Starting price (₹)</string>
+    <string name="price_unit">Price unit</string>
+    <string name="description">About your work</string>
+    <string name="choose_on_map">Choose on map</string>
+    <string name="use_current_location">Use current location</string>
+    <string name="working_days">Working days</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="verification">Verification</string>
+    <string name="save_profile">Save Profile</string>
+    <string name="change_photo">Change photo</string>
+    <string name="address_locality">Address / locality</string>
+    <string name="confirm_location">Confirm Location</string>
+    <string name="move_map_hint">Move the map to place the pin on your service location</string>
+
+    <!-- Portfolio -->
+    <string name="add_photo">Add Photo</string>
+    <string name="photo_description">Description (optional)</string>
+    <string name="upload">Upload</string>
+    <string name="delete_portfolio_confirm">Delete portfolio image?</string>
+    <string name="take_photo">Take photo</string>
+    <string name="choose_gallery">Choose from gallery</string>
+
+    <!-- Map -->
+    <string name="nearby_providers">Nearby Providers</string>
+    <string name="open_in_google_maps">Directions</string>
+    <string name="maps_key_missing">Map tiles need a Google Maps API key (see README). Markers and profiles still work.</string>
+    <string name="location_rationale_title">Show people near you?</string>
+    <string name="location_rationale">SkillConnect uses your location only to show skilled people near you and how far away they are. We never track you in the background.</string>
+    <string name="allow">Allow</string>
+    <string name="not_now">Not now</string>
+    <string name="camera_rationale">SkillConnect needs camera access to take photos for your profile and portfolio.</string>
+
+    <!-- Settings -->
+    <string name="notifications">Notifications</string>
+    <string name="notifications_desc">Booking updates and new requests</string>
+    <string name="clear_recent_searches">Clear recent searches</string>
+    <string name="clear_recently_viewed">Clear recently viewed</string>
+    <string name="replay_onboarding">Replay onboarding</string>
+    <string name="data_source">Data source</string>
+    <string name="about_app">About SkillConnect</string>
+
+    <!-- Notification channels -->
+    <string name="channel_bookings_id">bookings</string>
+    <string name="channel_bookings_name">Booking updates</string>
+    <string name="channel_bookings_desc">New requests, accepted bookings and reminders</string>
+</resources>

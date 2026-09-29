@@ -1,0 +1,106 @@
+rules_version = '2';
+
+// SkillConnect – Cloud Firestore security rules
+// Roles are stored in users/{uid}.role : CUSTOMER | PROVIDER | ADMIN
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function userDoc() { return get(/databases/$(database)/documents/users/$(uid())).data; }
+    function hasRole(role) { return signedIn() && exists(/databases/$(database)/documents/users/$(uid())) && userDoc().role == role; }
+    function isAdmin() { return hasRole('ADMIN'); }
+    function isProvider() { return hasRole('PROVIDER'); }
+    function isCustomer() { return hasRole('CUSTOMER'); }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    // ---------------- users ----------------
+    match /users/{userId} {
+      allow read: if signedIn() && (uid() == userId || isAdmin());
+      // Users can only create their own document and cannot make themselves ADMIN
+      allow create: if signedIn() && uid() == userId
+                    && request.resource.data.userId == userId
+                    && request.resource.data.role in ['CUSTOMER', 'PROVIDER']
+                    && request.resource.data.get('active', true) == true;
+      // Owners can edit their profile but not their role or active flag
+      allow update: if (signedIn() && uid() == userId
+                        && request.resource.data.role == resource.data.role
+                        && request.resource.data.get('active', true) == resource.data.get('active', true))
+                    || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- providers ----------------
+    match /providers/{providerId} {
+      allow read: if signedIn();
+      // A provider creates only their own listing, unverified and without ratings
+      allow create: if (isProvider() && uid() == providerId
+                        && request.resource.data.providerId == providerId
+                        && request.resource.data.get('verified', false) == false
+                        && request.resource.data.get('averageRating', 0) == 0
+                        && request.resource.data.get('reviewCount', 0) == 0)
+                    || isAdmin();
+      allow update: if
+          // the owner edits their profile, but not verification/rating/active status
+          (signedIn() && uid() == providerId
+             && !changed().hasAny(['verified', 'averageRating', 'reviewCount', 'active', 'providerId']))
+          // a customer submitting a review updates only the rating fields
+          || (isCustomer() && changed().hasOnly(['averageRating', 'reviewCount']))
+          || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- bookings ----------------
+    match /bookings/{bookingId} {
+      allow read: if signedIn() && (resource.data.customerId == uid() || resource.data.providerId == uid() || isAdmin());
+      allow create: if isCustomer()
+                    && request.resource.data.customerId == uid()
+                    && request.resource.data.status == 'PENDING'
+                    && request.resource.data.reviewed == false;
+      allow update: if
+          // provider: accept / reject / complete
+          (signedIn() && resource.data.providerId == uid()
+             && changed().hasOnly(['status', 'updatedAt'])
+             && request.resource.data.status in ['ACCEPTED', 'REJECTED', 'COMPLETED'])
+          // customer: cancel, or mark as reviewed
+          || (signedIn() && resource.data.customerId == uid()
+             && changed().hasOnly(['status', 'updatedAt', 'reviewed'])
+             && request.resource.data.status in [resource.data.status, 'CANCELLED'])
+          || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ---------------- reviews ----------------
+    match /reviews/{reviewId} {
+      allow read: if signedIn();
+      // one review per completed booking, written by that booking's customer
+      allow create: if (isCustomer()
+                        && request.resource.data.customerId == uid()
+                        && reviewId == request.resource.data.bookingId
+                        && get(/databases/$(database)/documents/bookings/$(reviewId)).data.customerId == uid()
+                        && request.resource.data.rating >= 1 && request.resource.data.rating <= 5)
+                    || isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------------- portfolio ----------------
+    match /portfolio/{portfolioId} {
+      allow read: if signedIn();
+      allow create: if (isProvider() && request.resource.data.providerId == uid()) || isAdmin();
+      allow update, delete: if (signedIn() && resource.data.providerId == uid()) || isAdmin();
+    }
+
+    // ---------------- favorites (cloud backup of SQLite favorites) ----------------
+    match /favorites/{favoriteId} {
+      allow read, delete: if signedIn() && (resource == null || resource.data.customerId == uid());
+      allow create, update: if signedIn() && request.resource.data.customerId == uid()
+                            && favoriteId == uid() + '_' + request.resource.data.providerId;
+    }
+
+    // ---------------- categories ----------------
+    match /categories/{categoryId} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

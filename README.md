@@ -1,3 +1,4 @@
+
 # SkillConnect
 
 **Find the right skill. Connect with the right person.**
@@ -358,3 +359,7 @@ Every screen has a back button or bottom navigation, so there are no dead ends.
 ---
 
 *All people, businesses, phone numbers and reviews in the sample data are fictional.*
+=======
+# SkillConnect_MAD
+ A location-based Android marketplace connecting customers with skilled service providers, developed using Java, XML, Firebase and Google Maps.  
+

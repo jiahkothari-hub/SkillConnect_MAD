@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_call"
+        android:icon="@drawable/ic_phone"
+        android:title="Call"
+        app:iconTint="@color/text_primary"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_book"
+        android:icon="@drawable/ic_calendar"
+        android:title="@string/book_service"
+        app:iconTint="@color/primary"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_profile"
+        android:title="@string/view_profile"
+        app:showAsAction="never" />
+</menu>

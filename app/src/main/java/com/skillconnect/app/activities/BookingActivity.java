@@ -5,12 +5,15 @@ import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
@@ -48,15 +51,18 @@ public class BookingActivity extends AppCompatActivity {
     private Provider provider;
     private StateView state;
 
-    private TextInputLayout tilService, tilDate, tilTime, tilAddress, tilDescription;
+    private TextInputLayout tilService, tilAddress, tilDescription;
+    private LinearLayout dateStrip;
+    private ChipGroup chipsTimeSlots;
+    private TextView tvWhenSummary;
     private MaterialAutoCompleteTextView actService;
-    private TextInputEditText etDate, etTime, etAddress, etDescription;
+    private TextInputEditText etAddress, etDescription;
     private MaterialButton btnSend;
     private View progress;
 
     private Calendar selectedDay;        // null until a date is picked
     private int selectedHour = -1;
-    private int selectedMinute = -1;
+    private int selectedMinute = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,22 +75,19 @@ public class BookingActivity extends AppCompatActivity {
 
         state = new StateView(findViewById(R.id.bookingState));
         tilService = findViewById(R.id.tilService);
-        tilDate = findViewById(R.id.tilDate);
-        tilTime = findViewById(R.id.tilTime);
+        dateStrip = findViewById(R.id.dateStrip);
+        chipsTimeSlots = findViewById(R.id.chipsTimeSlots);
+        tvWhenSummary = findViewById(R.id.tvWhenSummary);
         tilAddress = findViewById(R.id.tilAddress);
         tilDescription = findViewById(R.id.tilDescription);
         actService = findViewById(R.id.actService);
-        etDate = findViewById(R.id.etDate);
-        etTime = findViewById(R.id.etTime);
+
         etAddress = findViewById(R.id.etAddress);
         etDescription = findViewById(R.id.etDescription);
         btnSend = findViewById(R.id.btnSend);
         progress = findViewById(R.id.progress);
 
-        etDate.setOnClickListener(v -> showDatePicker());
-        tilDate.setStartIconOnClickListener(v -> showDatePicker());
-        etTime.setOnClickListener(v -> showTimePicker());
-        tilTime.setStartIconOnClickListener(v -> showTimePicker());
+        findViewById(R.id.btnOtherDate).setOnClickListener(v -> showDatePicker());
         btnSend.setOnClickListener(v -> validateAndConfirm());
 
         loadProvider();
@@ -127,12 +130,115 @@ public class BookingActivity extends AppCompatActivity {
         actService.setSimpleItems(services.toArray(new String[0]));
         actService.setText(provider.getTitle(), false);
 
+        buildDateStrip();
+        buildTimeSlots();
+        updateWhenSummary(false);
+
         User me = repo.getCachedUser();
         String address = me != null && me.getAddress() != null ? me.getAddress() : PrefsManager.get(this).getLocality();
         if (address != null) etAddress.setText(address);
     }
 
-    // ---------------------------------------------------------------- pickers
+    // ---------------------------------------------------------------- date strip & time slots
+
+    private static final int STRIP_DAYS = 14;
+
+    /** Next 14 days as tappable cards. Days the provider doesn't usually work are marked "Off". */
+    private void buildDateStrip() {
+        dateStrip.removeAllViews();
+        SimpleDateFormat dayName = new SimpleDateFormat("EEE", Locale.ENGLISH);
+        SimpleDateFormat month = new SimpleDateFormat("MMM", Locale.ENGLISH);
+        Calendar day = Calendar.getInstance();
+        for (int i = 0; i < STRIP_DAYS; i++) {
+            Calendar c = (Calendar) day.clone();
+            c.add(Calendar.DAY_OF_YEAR, i);
+            c.set(Calendar.HOUR_OF_DAY, 0);
+            c.set(Calendar.MINUTE, 0);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            View chip = getLayoutInflater().inflate(R.layout.item_date_chip, dateStrip, false);
+            String name = dayName.format(c.getTime());
+            boolean worksThatDay = provider.getAvailableDays().isEmpty() || provider.getAvailableDays().contains(name);
+            ((TextView) chip.findViewById(R.id.tvDayName)).setText(i == 0 ? "Today" : name);
+            ((TextView) chip.findViewById(R.id.tvDayNumber)).setText(String.valueOf(c.get(Calendar.DAY_OF_MONTH)));
+            ((TextView) chip.findViewById(R.id.tvDayNote)).setText(worksThatDay ? month.format(c.getTime()) : "Off");
+            chip.setAlpha(worksThatDay ? 1f : 0.55f);
+            chip.setTag(c);
+            chip.setOnClickListener(v -> selectDay(c));
+            dateStrip.addView(chip);
+        }
+    }
+
+    private void selectDay(Calendar c) {
+        selectedDay = c;
+        for (int i = 0; i < dateStrip.getChildCount(); i++) {
+            View chip = dateStrip.getChildAt(i);
+            Calendar tag = (Calendar) chip.getTag();
+            chip.setSelected(DateTimeUtils.sameDay(tag.getTimeInMillis(), c.getTimeInMillis()));
+        }
+        // Times already passed today become unavailable
+        if (selectedHour >= 0 && isTooSoon(selectedHour, selectedMinute)) {
+            selectedHour = -1;
+            selectedMinute = 0;
+        }
+        buildTimeSlots();
+        updateWhenSummary(false);
+    }
+
+    /** Hourly slots inside the provider's working hours, plus "Other time…" (TimePickerDialog). */
+    private void buildTimeSlots() {
+        chipsTimeSlots.removeAllViews();
+        int[] from = DateTimeUtils.parseTime(provider.getAvailableFrom());
+        int[] to = DateTimeUtils.parseTime(provider.getAvailableTo());
+        int startHour = from != null ? from[0] : 9;
+        int endHour = to != null ? to[0] : 19;
+        if (endHour <= startHour) endHour = startHour + 8;
+        for (int h = startHour; h < endHour; h++) {
+            int hour = h;
+            Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_filter, chipsTimeSlots, false);
+            chip.setText(DateTimeUtils.to12Hour(DateTimeUtils.formatTime24(hour, 0)));
+            chip.setCheckable(true);
+            chip.setCheckedIconVisible(false);
+            chip.setChecked(selectedHour == hour && selectedMinute == 0);
+            chip.setEnabled(!isTooSoon(hour, 0));
+            chip.setOnClickListener(v -> {
+                if (chip.isChecked()) {
+                    selectedHour = hour;
+                    selectedMinute = 0;
+                } else {
+                    selectedHour = -1;
+                }
+                updateWhenSummary(false);
+            });
+            chipsTimeSlots.addView(chip);
+        }
+        Chip other = (Chip) getLayoutInflater().inflate(R.layout.item_chip_action, chipsTimeSlots, false);
+        other.setText("Other time…");
+        other.setChipIconResource(R.drawable.ic_time);
+        other.setChipIconVisible(true);
+        other.setOnClickListener(v -> showTimePicker());
+        chipsTimeSlots.addView(other);
+    }
+
+    /** True if the slot is on the selected day and less than 30 minutes from now. */
+    private boolean isTooSoon(int hour, int minute) {
+        if (selectedDay == null) return false;
+        long at = DateTimeUtils.combine(selectedDay.getTimeInMillis(), DateTimeUtils.formatTime24(hour, minute));
+        return at < System.currentTimeMillis() + 30 * 60 * 1000L;
+    }
+
+    private void updateWhenSummary(boolean error) {
+        String text;
+        if (selectedDay == null && selectedHour < 0) text = "Choose a date and time";
+        else if (selectedDay == null) text = "Choose a date · " + DateTimeUtils.to12Hour(DateTimeUtils.formatTime24(selectedHour, selectedMinute));
+        else if (selectedHour < 0) text = DateTimeUtils.displayDate(selectedDay.getTimeInMillis()) + " · choose a time";
+        else text = DateTimeUtils.displayDate(selectedDay.getTimeInMillis()) + " · "
+                    + DateTimeUtils.to12Hour(DateTimeUtils.formatTime24(selectedHour, selectedMinute));
+        tvWhenSummary.setText(text);
+        tvWhenSummary.setTextColor(getColor(error ? R.color.error : R.color.primary_dark));
+    }
+
+    // ---------------------------------------------------------------- pickers (other date / time)
 
     private void showDatePicker() {
         Calendar initial = selectedDay != null ? selectedDay : Calendar.getInstance();
@@ -140,9 +246,7 @@ public class BookingActivity extends AppCompatActivity {
             Calendar c = Calendar.getInstance();
             c.set(year, month, day, 0, 0, 0);
             c.set(Calendar.MILLISECOND, 0);
-            selectedDay = c;
-            etDate.setText(DateTimeUtils.displayDate(c.getTimeInMillis()));
-            tilDate.setError(null);
+            selectDay(c);
         }, initial.get(Calendar.YEAR), initial.get(Calendar.MONTH), initial.get(Calendar.DAY_OF_MONTH));
         Calendar max = Calendar.getInstance();
         max.add(Calendar.DAY_OF_YEAR, MAX_DAYS_AHEAD);
@@ -154,19 +258,19 @@ public class BookingActivity extends AppCompatActivity {
     private void showTimePicker() {
         int[] start = DateTimeUtils.parseTime(provider != null ? provider.getAvailableFrom() : "09:00");
         int hour = selectedHour >= 0 ? selectedHour : (start != null ? start[0] : 9);
-        int minute = selectedMinute >= 0 ? selectedMinute : 0;
+        int minute = selectedHour >= 0 ? selectedMinute : 0;
         new TimePickerDialog(this, (view, h, m) -> {
             selectedHour = h;
             selectedMinute = m;
-            etTime.setText(DateTimeUtils.to12Hour(DateTimeUtils.formatTime24(h, m)));
-            tilTime.setError(null);
+            buildTimeSlots();       // highlights the matching slot if there is one
+            updateWhenSummary(false);
         }, hour, minute, false).show();
     }
 
     // ---------------------------------------------------------------- validation
 
     private void validateAndConfirm() {
-        for (TextInputLayout t : new TextInputLayout[]{tilService, tilDate, tilTime, tilAddress, tilDescription}) {
+        for (TextInputLayout t : new TextInputLayout[]{tilService, tilAddress, tilDescription}) {
             t.setError(null);
         }
         String service = actService.getText() != null ? actService.getText().toString().trim() : "";
@@ -178,12 +282,8 @@ public class BookingActivity extends AppCompatActivity {
             tilService.setError("Choose or type a service");
             valid = false;
         }
-        if (selectedDay == null) {
-            tilDate.setError("Pick a date");
-            valid = false;
-        }
-        if (selectedHour < 0) {
-            tilTime.setError("Pick a time");
+        if (selectedDay == null || selectedHour < 0) {
+            updateWhenSummary(true);
             valid = false;
         }
         long scheduledAt = 0;
@@ -191,7 +291,8 @@ public class BookingActivity extends AppCompatActivity {
             scheduledAt = DateTimeUtils.combine(selectedDay.getTimeInMillis(),
                     DateTimeUtils.formatTime24(selectedHour, selectedMinute));
             if (scheduledAt < System.currentTimeMillis() + 30 * 60 * 1000L) {
-                tilTime.setError("Choose a time at least 30 min from now");
+                tvWhenSummary.setText("Please choose a time at least 30 minutes from now");
+                tvWhenSummary.setTextColor(getColor(R.color.error));
                 valid = false;
             }
         }

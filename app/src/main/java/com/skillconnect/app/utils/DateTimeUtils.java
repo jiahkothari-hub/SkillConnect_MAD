@@ -116,6 +116,14 @@ public final class DateTimeUtils {
         return sb.toString();
     }
 
+    /** "Good morning" / "Good afternoon" / "Good evening" based on the current time. */
+    public static String greeting() {
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        if (hour < 12) return "Good morning";
+        if (hour < 17) return "Good afternoon";
+        return "Good evening";
+    }
+
     public static boolean sameDay(long a, long b) {
         Calendar ca = Calendar.getInstance();
         ca.setTimeInMillis(a);

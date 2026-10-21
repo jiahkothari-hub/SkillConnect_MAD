@@ -1,6 +1,17 @@
 package com.skillconnect.app.fragments;
 
 import android.content.Intent;
+import android.animation.ObjectAnimator;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.LinearLayout;
+import androidx.viewpager2.widget.MarginPageTransformer;
+import androidx.viewpager2.widget.ViewPager2;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.skillconnect.app.adapters.PromoAdapter;
+import com.skillconnect.app.utils.AnimUtils;
+import com.skillconnect.app.utils.DateTimeUtils;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,6 +84,22 @@ public class CustomerHomeFragment extends Fragment {
     private CategoryCardAdapter categoryAdapter;
     private ProviderAdapter nearbyAdapter;
     private ProviderCompactAdapter recommendedAdapter;
+    private ViewPager2 vpPromos;
+    private LinearLayout promoDots;
+    private View skeletonNearby;
+    private ObjectAnimator skeletonAnimator;
+    private final Handler autoScroll = new Handler(Looper.getMainLooper());
+    private static final long PROMO_INTERVAL_MS = 4500;
+    private final Runnable nextPromo = new Runnable() {
+        @Override
+        public void run() {
+            if (vpPromos != null && vpPromos.getAdapter() != null && vpPromos.getAdapter().getItemCount() > 1) {
+                int next = (vpPromos.getCurrentItem() + 1) % vpPromos.getAdapter().getItemCount();
+                vpPromos.setCurrentItem(next, true);
+            }
+            autoScroll.postDelayed(this, PROMO_INTERVAL_MS);
+        }
+    };
     private final List<Provider> allProviders = new ArrayList<>();
     private boolean providersLoaded;
     private TextView tvChatBadge;
@@ -151,6 +178,9 @@ public class CustomerHomeFragment extends Fragment {
         rvNearby.setAdapter(nearbyAdapter);
 
         recommendedAdapter = new ProviderCompactAdapter(this::openProvider);
+        skeletonNearby = view.findViewById(R.id.skeletonNearby);
+        setupQuickSkills(view);
+        setupPromos(view);
         rvRecommended.setAdapter(recommendedAdapter);
 
         view.findViewById(R.id.searchBar).setOnClickListener(v -> {
@@ -188,11 +218,122 @@ public class CustomerHomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (nearbyAdapter != null) nearbyAdapter.notifyDataSetChanged();
+        if (!isHidden()) startPromoAutoScroll();
+    }
+
+    @Override
+    public void onPause() {
+        autoScroll.removeCallbacks(nextPromo);
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        autoScroll.removeCallbacks(nextPromo);
+        if (skeletonAnimator != null) skeletonAnimator.cancel();
+        super.onDestroyView();
+    }
+
+    private void startPromoAutoScroll() {
+        autoScroll.removeCallbacks(nextPromo);
+        autoScroll.postDelayed(nextPromo, PROMO_INTERVAL_MS);
+    }
+
+    // ------------------------------------------------------------------ quick skills & promos
+
+    /** One-tap chips for the most requested skills. */
+    private void setupQuickSkills(View view) {
+        ChipGroup group = view.findViewById(R.id.chipsQuickSkills);
+        String[][] skills = {
+                {"Electrician", CategoryData.HOME}, {"Plumber", CategoryData.HOME}, {"AC Repair", CategoryData.HOME},
+                {"Math Tutor", CategoryData.EDUCATION}, {"Makeup Artist", CategoryData.CREATIVE},
+                {"Photographer", CategoryData.CREATIVE}, {"Fitness Trainer", CategoryData.LIFESTYLE},
+                {"Web Developer", CategoryData.TECH}};
+        for (String[] skill : skills) {
+            Chip chip = (Chip) getLayoutInflater().inflate(R.layout.item_chip_action, group, false);
+            chip.setText(skill[0]);
+            chip.setChipIconResource(CategoryData.getCategoryIcon(skill[1]));
+            chip.setChipIconVisible(true);
+            chip.setOnClickListener(v -> openSkill(skill[0], skill[1]));
+            group.addView(chip);
+        }
+    }
+
+    private void setupPromos(View view) {
+        vpPromos = view.findViewById(R.id.vpPromos);
+        promoDots = view.findViewById(R.id.promoDots);
+        List<PromoAdapter.Promo> promos = new ArrayList<>();
+        promos.add(new PromoAdapter.Promo("SUMMER READY", "AC servicing at your doorstep",
+                "Verified technicians near you, from ₹400", "Book now",
+                R.drawable.ic_cat_home, R.drawable.bg_promo_indigo, CategoryData.HOME, "AC Repair"));
+        promos.add(new PromoAdapter.Promo("LEARN SOMETHING NEW", "Tutors for every subject",
+                "Guitar, coding and maths from ₹400/hour", "Find a tutor",
+                R.drawable.ic_cat_education, R.drawable.bg_promo_teal, CategoryData.EDUCATION, null));
+        promos.add(new PromoAdapter.Promo("WEDDING SEASON", "Top makeup & mehendi artists",
+                "Highly rated artists for every occasion", "Explore",
+                R.drawable.ic_cat_creative, R.drawable.bg_promo_rose, CategoryData.CREATIVE, null));
+        vpPromos.setAdapter(new PromoAdapter(promos, promo -> {
+            if (promo.skill != null) openSkill(promo.skill, promo.categoryId);
+            else openCategory(CategoryData.getCategory(promo.categoryId));
+        }));
+        vpPromos.setOffscreenPageLimit(1);
+        vpPromos.setPageTransformer(new MarginPageTransformer(UiUtils.dp(requireContext(), 12)));
+
+        promoDots.removeAllViews();
+        for (int i = 0; i < promos.size(); i++) {
+            ImageView dot = new ImageView(requireContext());
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            int m = UiUtils.dp(requireContext(), 3);
+            lp.setMargins(m, 0, m, 0);
+            dot.setLayoutParams(lp);
+            promoDots.addView(dot);
+        }
+        updatePromoDots(0);
+        vpPromos.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                updatePromoDots(position);
+                startPromoAutoScroll();   // restart the timer after a manual swipe
+            }
+        });
+    }
+
+    private void updatePromoDots(int selected) {
+        for (int i = 0; i < promoDots.getChildCount(); i++) {
+            ((ImageView) promoDots.getChildAt(i)).setImageResource(
+                    i == selected ? R.drawable.bg_indicator_active : R.drawable.bg_indicator_inactive);
+        }
+    }
+
+    private void openSkill(String skill, String categoryId) {
+        Intent i = new Intent(requireContext(), ProviderListActivity.class);
+        i.putExtra(ProviderListActivity.EXTRA_TITLE, skill);
+        i.putExtra(ProviderListActivity.EXTRA_CATEGORY_ID, categoryId);
+        i.putExtra(ProviderListActivity.EXTRA_SKILL, skill);
+        startActivity(i);
+    }
+
+    /** Pulsing grey placeholder cards instead of a spinner. */
+    private void showSkeleton(boolean show) {
+        if (show) {
+            skeletonNearby.setVisibility(View.VISIBLE);
+            if (skeletonAnimator == null) skeletonAnimator = AnimUtils.pulse(skeletonNearby);
+        } else {
+            if (skeletonAnimator != null) {
+                skeletonAnimator.cancel();
+                skeletonAnimator = null;
+            }
+            skeletonNearby.setVisibility(View.GONE);
+            skeletonNearby.setAlpha(1f);
+        }
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        if (hidden) autoScroll.removeCallbacks(nextPromo);
+        else if (getView() != null) startPromoAutoScroll();
         if (!hidden && getView() != null) {
             bindUser();
             updateLocationLabel();
@@ -215,7 +356,7 @@ public class CustomerHomeFragment extends Fragment {
     private void bindUser() {
         User user = repo.getCachedUser();
         String name = user != null ? user.getFirstName() : "there";
-        tvGreeting.setText("Hello, " + name + " 👋");
+        tvGreeting.setText(DateTimeUtils.greeting() + ", " + name + " 👋");
         ImageUtils.loadAvatar(ivAvatar, user != null ? user.getProfileImage() : null, user != null ? user.getName() : "?");
     }
 
@@ -291,7 +432,8 @@ public class CustomerHomeFragment extends Fragment {
 
     private void loadProviders() {
         if (allProviders.isEmpty()) {
-            nearbyState.showLoading(getString(R.string.finding_people));
+            nearbyState.hide();
+            showSkeleton(true);
             rvNearby.setVisibility(View.GONE);
         }
         repo.getProviders(false, new Callback<List<Provider>>() {
@@ -309,6 +451,7 @@ public class CustomerHomeFragment extends Fragment {
             public void onError(String message) {
                 if (!isAdded()) return;
                 swipeRefresh.setRefreshing(false);
+                showSkeleton(false);
                 if (allProviders.isEmpty()) {
                     rvNearby.setVisibility(View.GONE);
                     nearbyState.showError(message, CustomerHomeFragment.this::loadProviders);
@@ -321,6 +464,7 @@ public class CustomerHomeFragment extends Fragment {
 
     private void renderProviders() {
         if (!isAdded() || !providersLoaded) return;
+        showSkeleton(false);
         LocationUtils.applyDistances(requireContext(), allProviders);
 
         List<Category> categories = CategoryData.getMainCategories();
@@ -334,8 +478,10 @@ public class CustomerHomeFragment extends Fragment {
                     "Providers will appear here once they join SkillConnect.");
         } else {
             nearbyState.hide();
+            boolean firstShow = rvNearby.getVisibility() != View.VISIBLE;
             rvNearby.setVisibility(View.VISIBLE);
             nearbyAdapter.submit(nearby.subList(0, Math.min(NEARBY_LIMIT, nearby.size())));
+            if (firstShow) rvNearby.scheduleLayoutAnimation();
         }
         renderRecommended();
     }

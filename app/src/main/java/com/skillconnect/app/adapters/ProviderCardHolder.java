@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat;
 import com.google.android.material.button.MaterialButton;
 import com.skillconnect.app.R;
 import com.skillconnect.app.models.Provider;
+import com.skillconnect.app.utils.AnimUtils;
 import com.skillconnect.app.utils.ImageUtils;
 import com.skillconnect.app.utils.LocationUtils;
 import com.skillconnect.app.utils.UiUtils;
@@ -79,7 +80,10 @@ public class ProviderCardHolder {
         favorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
         favorite.setColorFilter(ContextCompat.getColor(root.getContext(), isFavorite ? R.color.error : R.color.text_hint));
 
-        favorite.setOnClickListener(v -> listener.onToggleFavorite(p));
+        favorite.setOnClickListener(v -> {
+            AnimUtils.pop(favorite);
+            listener.onToggleFavorite(p);
+        });
         viewProfile.setOnClickListener(v -> listener.onOpenProvider(p));
     }
 }

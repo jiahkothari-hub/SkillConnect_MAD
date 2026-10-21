@@ -31,6 +31,7 @@ import com.skillconnect.app.models.PortfolioItem;
 import com.skillconnect.app.models.Provider;
 import com.skillconnect.app.models.Review;
 import com.skillconnect.app.models.User;
+import com.skillconnect.app.utils.AnimUtils;
 import com.skillconnect.app.utils.ChatLauncher;
 import com.skillconnect.app.utils.DateTimeUtils;
 import com.skillconnect.app.utils.FavoriteHelper;
@@ -77,6 +78,7 @@ public class ProviderDetailsActivity extends AppCompatActivity {
             if (provider == null) return;
             FavoriteHelper.toggle(this, provider);
             updateFavoriteIcon();
+            AnimUtils.pop(btnFavorite);
         });
         findViewById(R.id.btnContact).setOnClickListener(v -> showContactOptions());
         findViewById(R.id.btnMap).setOnClickListener(v -> openMap());

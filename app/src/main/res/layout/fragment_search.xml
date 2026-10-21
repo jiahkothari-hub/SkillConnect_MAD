@@ -149,6 +149,7 @@
 
             <ListView
                 android:id="@+id/listResults"
+            android:layoutAnimation="@anim/layout_fade_up"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"

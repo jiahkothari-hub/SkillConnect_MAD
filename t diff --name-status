@@ -1,0 +1,60 @@
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/AndroidManifest.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/activities/BaseHomeActivity.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/activities/BookingActivity.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/activities/BookingDetailsActivity.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/activities/CustomerHomeActivity.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/activities/EditProfileActivity.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/activities/ProviderDetailsActivity.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/activities/ProviderHomeActivity.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/adapters/ProviderCardHolder.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/data/AppRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/data/DemoData.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/data/DemoRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/firebase/FirebaseRepository.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/firebase/FirestoreHelper.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/firebase/StorageHelper.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/fragments/CustomerHomeFragment.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/fragments/ProfileFragment.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/notifications/NotificationHelper.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/notifications/SkillConnectMessagingService.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/utils/DateTimeUtils.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/utils/LocationUtils.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/java/com/skillconnect/app/utils/PrefsManager.java', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/color/chip_bg_color.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/color/chip_stroke_color.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/color/chip_text_color.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/activity_booking.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/activity_booking_details.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/activity_edit_profile.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/activity_provider_details.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/activity_provider_list.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/fragment_bookings.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/fragment_chat_list.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/fragment_customer_home.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/fragment_profile.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/fragment_saved.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/layout/fragment_search.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/menu/menu_provider_nav.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/values/strings.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/src/main/res/values/themes.xml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'firebase/firestore.rules', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'firebase/functions/index.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'firebase/storage.rules', LF will be replaced by CRLF the next time Git touches it
+ .../app/activities/BookingActivity.java            | 153 [32m+++++++++++++++++[m[31m----[m
+ .../app/activities/ProviderDetailsActivity.java    |   2 [32m+[m
+ .../app/adapters/ProviderCardHolder.java           |   6 [32m+[m[31m-[m
+ .../app/fragments/CustomerHomeFragment.java        | 150 [32m+++++++++++++++++++[m[31m-[m
+ .../com/skillconnect/app/utils/DateTimeUtils.java  |   8 [32m++[m
+ app/src/main/res/color/chip_bg_color.xml           |   1 [32m+[m
+ app/src/main/res/color/chip_stroke_color.xml       |   1 [32m+[m
+ app/src/main/res/color/chip_text_color.xml         |   1 [32m+[m
+ app/src/main/res/layout/activity_booking.xml       | 107 [32m++++++++[m[31m------[m
+ app/src/main/res/layout/activity_provider_list.xml |   1 [32m+[m
+ app/src/main/res/layout/fragment_bookings.xml      |   1 [32m+[m
+ app/src/main/res/layout/fragment_chat_list.xml     |   1 [32m+[m
+ app/src/main/res/layout/fragment_customer_home.xml |  57 [32m+++++++[m[31m-[m
+ app/src/main/res/layout/fragment_saved.xml         |   1 [32m+[m
+ app/src/main/res/layout/fragment_search.xml        |   1 [32m+[m
+ app/src/main/res/values/themes.xml                 |   9 [32m++[m
+ 16 files changed, 430 insertions(+), 70 deletions(-)

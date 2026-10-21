@@ -114,56 +114,83 @@
                         android:maxLength="60" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Date: swipeable strip of the next 14 days (+ DatePickerDialog for other dates) -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Date"
+                        android:textAppearance="@style/TextAppearance.SkillConnect.Label" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnOtherDate"
+                        style="@style/Widget.SkillConnect.Button.Text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="36dp"
+                        android:text="Pick another date"
+                        app:icon="@drawable/ic_calendar"
+                        app:iconSize="16dp"
+                        app:iconTint="@color/primary" />
+                </LinearLayout>
+
+                <HorizontalScrollView
+                    android:id="@+id/scrollDates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="-20dp"
+                    android:layout_marginEnd="-20dp"
+                    android:clipToPadding="false"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/dateStrip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+
+                <!-- Time: one-tap slots (+ TimePickerDialog for any other time) -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="18dp"
-                    android:text="When"
+                    android:text="Time"
                     android:textAppearance="@style/TextAppearance.SkillConnect.Label" />
 
-                <LinearLayout
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipsTimeSlots"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="6dp"
+                    app:chipSpacingVertical="4dp"
+                    app:selectionRequired="false"
+                    app:singleSelection="true" />
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilDate"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
-                        android:layout_weight="1.2"
-                        android:hint="@string/select_date"
-                        app:startIconDrawable="@drawable/ic_calendar">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etDate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:cursorVisible="false"
-                            android:focusable="false"
-                            android:inputType="none" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilTime"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:hint="@string/select_time"
-                        app:startIconDrawable="@drawable/ic_time">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etTime"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:cursorVisible="false"
-                            android:focusable="false"
-                            android:inputType="none" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
+                <TextView
+                    android:id="@+id/tvWhenSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_rounded_variant"
+                    android:backgroundTint="@color/primary_light"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    android:padding="12dp"
+                    android:textColor="@color/primary_dark"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-medium"
+                    app:drawableStartCompat="@drawable/ic_time"
+                    app:drawableTint="@color/primary" />
 
                 <TextView
                     android:id="@+id/tvWorkingHours"

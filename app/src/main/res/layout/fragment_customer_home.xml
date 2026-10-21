@@ -171,11 +171,48 @@
                     app:tint="@color/white" />
             </LinearLayout>
 
+            <!-- Popular skills: one tap to a filtered list -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="@dimen/screen_padding"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipsQuickSkills"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleLine="true" />
+            </HorizontalScrollView>
+
+            <!-- Promo carousel -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/vpPromos"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:layout_marginTop="14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="36dp" />
+
+            <LinearLayout
+                android:id="@+id/promoDots"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:orientation="horizontal" />
+
             <!-- Categories -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingStart="@dimen/screen_padding"
@@ -290,8 +327,26 @@
                 android:id="@+id/nearbyState"
                 layout="@layout/view_state" />
 
+            <!-- Skeleton cards shown while providers load -->
+            <LinearLayout
+                android:id="@+id/skeletonNearby"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="@dimen/screen_padding"
+                android:paddingEnd="@dimen/screen_padding"
+                android:visibility="gone">
+
+                <include layout="@layout/item_skeleton_provider" />
+
+                <include layout="@layout/item_skeleton_provider" />
+
+                <include layout="@layout/item_skeleton_provider" />
+            </LinearLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvNearby"
+                android:layoutAnimation="@anim/layout_fade_up"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"

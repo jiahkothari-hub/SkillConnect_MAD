@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Grey placeholder shaped like a provider card, shown (with a pulse) while loading -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="12dp">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:background="@drawable/bg_skeleton" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <View
+                        android:layout_width="140dp"
+                        android:layout_height="14dp"
+                        android:layout_marginTop="4dp"
+                        android:background="@drawable/bg_skeleton" />
+
+                    <View
+                        android:layout_width="90dp"
+                        android:layout_height="12dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_skeleton" />
+
+                    <View
+                        android:layout_width="70dp"
+                        android:layout_height="12dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_skeleton" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="110dp"
+                    android:layout_height="14dp"
+                    android:background="@drawable/bg_skeleton" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <View
+                    android:layout_width="96dp"
+                    android:layout_height="34dp"
+                    android:background="@drawable/bg_skeleton" />
+            </LinearLayout>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

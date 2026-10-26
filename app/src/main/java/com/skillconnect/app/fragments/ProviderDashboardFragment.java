@@ -27,6 +27,8 @@ import com.skillconnect.app.models.Booking;
 import com.skillconnect.app.models.Provider;
 import com.skillconnect.app.models.User;
 import com.skillconnect.app.utils.BookingActions;
+import com.skillconnect.app.utils.EarningsDialog;
+import com.skillconnect.app.utils.EarningsUtils;
 import com.skillconnect.app.utils.ImageUtils;
 import com.skillconnect.app.utils.StateView;
 import com.skillconnect.app.utils.UiUtils;
@@ -46,6 +48,7 @@ public class ProviderDashboardFragment extends Fragment implements BookingsHost.
     private SwipeRefreshLayout swipeRefresh;
     private TextView tvWelcome, tvProfession, tvAvailabilityHint;
     private TextView tvStatPending, tvStatConfirmed, tvStatCompleted, tvStatRating;
+    private TextView tvEarningsTotal, tvEarningsJobs, tvEarningsMonth, tvEarningsUpcoming, tvEarningsAverage;
     private MaterialSwitch switchAvailable;
     private View availabilityDot;
     private View cardCompleteProfile;
@@ -72,6 +75,11 @@ public class ProviderDashboardFragment extends Fragment implements BookingsHost.
         tvStatConfirmed = view.findViewById(R.id.tvStatConfirmed);
         tvStatCompleted = view.findViewById(R.id.tvStatCompleted);
         tvStatRating = view.findViewById(R.id.tvStatRating);
+        tvEarningsTotal = view.findViewById(R.id.tvEarningsTotal);
+        tvEarningsJobs = view.findViewById(R.id.tvEarningsJobs);
+        tvEarningsMonth = view.findViewById(R.id.tvEarningsMonth);
+        tvEarningsUpcoming = view.findViewById(R.id.tvEarningsUpcoming);
+        tvEarningsAverage = view.findViewById(R.id.tvEarningsAverage);
         switchAvailable = view.findViewById(R.id.switchAvailable);
         availabilityDot = view.findViewById(R.id.viewAvailabilityDot);
         cardCompleteProfile = view.findViewById(R.id.cardCompleteProfile);
@@ -106,6 +114,9 @@ public class ProviderDashboardFragment extends Fragment implements BookingsHost.
 
         swipeRefresh.setColorSchemeResources(R.color.primary);
         swipeRefresh.setOnRefreshListener(this::loadProvider);
+        view.findViewById(R.id.cardEarnings).setOnClickListener(v -> {
+            if (host.getLatestBookings() != null) EarningsDialog.show(requireActivity(), host.getLatestBookings());
+        });
         view.findViewById(R.id.btnViewAllRequests).setOnClickListener(v -> host.selectTab(R.id.nav_requests));
         view.findViewById(R.id.btnCompleteProfile).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), EditProviderProfileActivity.class)));
@@ -179,6 +190,14 @@ public class ProviderDashboardFragment extends Fragment implements BookingsHost.
         });
     }
 
+    private void bindEarnings(EarningsUtils.Summary s) {
+        tvEarningsTotal.setText(UiUtils.formatPrice(s.total));
+        tvEarningsJobs.setText("From " + EarningsDialog.jobs(s.completedJobs) + " completed");
+        tvEarningsMonth.setText(UiUtils.formatPrice(s.thisMonth));
+        tvEarningsUpcoming.setText(UiUtils.formatPrice(s.upcoming));
+        tvEarningsAverage.setText(UiUtils.formatPrice(s.averagePerJob()));
+    }
+
     private void updateAvailabilityHint(boolean available) {
         tvAvailabilityHint.setText(available ? "Customers see you as available" : "Customers see you as busy");
         availabilityDot.setBackgroundResource(available ? R.drawable.bg_dot_available : R.drawable.bg_dot_unavailable);
@@ -223,6 +242,7 @@ public class ProviderDashboardFragment extends Fragment implements BookingsHost.
         tvStatPending.setText(String.valueOf(pending));
         tvStatConfirmed.setText(String.valueOf(confirmed));
         tvStatCompleted.setText(String.valueOf(completed));
+        bindEarnings(EarningsUtils.calculate(all));
 
         adapter.submit(newest);
         if (newest.isEmpty()) {

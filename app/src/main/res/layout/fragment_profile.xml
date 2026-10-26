@@ -90,6 +90,7 @@
                     <include android:id="@+id/rowProfession" layout="@layout/item_detail_row" />
                     <include android:id="@+id/rowExperience" layout="@layout/item_detail_row" />
                     <include android:id="@+id/rowRating" layout="@layout/item_detail_row" />
+                    <include android:id="@+id/rowEarnings" layout="@layout/item_detail_row" />
                     <include android:id="@+id/rowAvailability" layout="@layout/item_detail_row" />
                     <include android:id="@+id/rowVerification" layout="@layout/item_detail_row" />
 

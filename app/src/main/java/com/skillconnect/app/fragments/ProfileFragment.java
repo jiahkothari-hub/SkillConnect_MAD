@@ -35,6 +35,8 @@ import com.skillconnect.app.models.Booking;
 import com.skillconnect.app.models.Provider;
 import com.skillconnect.app.models.User;
 import com.skillconnect.app.utils.DateTimeUtils;
+import com.skillconnect.app.utils.EarningsDialog;
+import com.skillconnect.app.utils.EarningsUtils;
 import com.skillconnect.app.utils.FileUtils;
 import com.skillconnect.app.utils.ImageUtils;
 import com.skillconnect.app.utils.NavigationUtils;
@@ -44,7 +46,7 @@ import com.skillconnect.app.utils.UiUtils;
 import java.util.List;
 
 /** Profile tab for both roles. Providers see their professional details and extra tools. */
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements BookingsHost.BookingsListener {
 
     private AppRepository repo;
     private User user;
@@ -84,7 +86,31 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         root = view;
         repo = RepositoryProvider.get();
+        BookingsHost host = bookingsHost();
+        if (host != null) host.addBookingsListener(this);
         refresh();
+    }
+
+    @Override
+    public void onDestroyView() {
+        BookingsHost host = bookingsHost();
+        if (host != null) host.removeBookingsListener(this);
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onBookingsChanged(List<Booking> bookings) {
+        if (isAdded() && root != null && user != null && user.isProvider()) bindEarnings();
+    }
+
+    @Override
+    public void onBookingsError(String message) {
+        // The bookings tabs show the error
+    }
+
+    @Nullable
+    private BookingsHost bookingsHost() {
+        return getActivity() instanceof BookingsHost ? (BookingsHost) getActivity() : null;
     }
 
     @Override
@@ -104,7 +130,26 @@ public class ProfileFragment extends Fragment {
         if (user == null) return;
         bindUser();
         setupMenu();
-        if (user.isProvider()) loadProvider();
+        if (user.isProvider()) {
+            bindEarnings();
+            loadProvider();
+        }
+    }
+
+    /** Provider earnings from completed jobs; tapping the row opens the monthly breakdown. */
+    private void bindEarnings() {
+        BookingsHost host = bookingsHost();
+        List<Booking> bookings = host != null ? host.getLatestBookings() : null;
+        String value;
+        if (bookings == null) {
+            value = getString(R.string.loading);
+        } else {
+            EarningsUtils.Summary s = EarningsUtils.calculate(bookings);
+            value = UiUtils.formatPrice(s.total) + " total · " + UiUtils.formatPrice(s.thisMonth) + " this month";
+        }
+        row(R.id.rowEarnings, R.drawable.ic_rupee, getString(R.string.earnings), value, true);
+        root.findViewById(R.id.rowEarnings).setOnClickListener(bookings == null ? null
+                : v -> EarningsDialog.show(requireActivity(), bookings));
     }
 
     private void bindUser() {
@@ -120,7 +165,7 @@ public class ProfileFragment extends Fragment {
         row(R.id.rowLocation, R.drawable.ic_location, "Location", location, true);
 
         boolean isProvider = user.isProvider();
-        for (int id : new int[]{R.id.rowProfession, R.id.rowExperience, R.id.rowRating, R.id.rowAvailability, R.id.rowVerification}) {
+        for (int id : new int[]{R.id.rowProfession, R.id.rowExperience, R.id.rowRating, R.id.rowEarnings, R.id.rowAvailability, R.id.rowVerification}) {
             root.findViewById(id).setVisibility(isProvider ? View.VISIBLE : View.GONE);
         }
         root.findViewById(R.id.chipsSkills).setVisibility(View.GONE);
@@ -183,7 +228,7 @@ public class ProfileFragment extends Fragment {
     private void setupMenu() {
         boolean isProvider = user.isProvider();
         boolean isCustomer = user.isCustomer();
-        BookingsHost host = getActivity() instanceof BookingsHost ? (BookingsHost) getActivity() : null;
+        BookingsHost host = bookingsHost();
 
         menu(R.id.menuEditProfile, R.drawable.ic_edit, getString(R.string.edit_profile), true, () ->
                 startActivity(new Intent(requireContext(), isProvider ? EditProviderProfileActivity.class : EditProfileActivity.class)));

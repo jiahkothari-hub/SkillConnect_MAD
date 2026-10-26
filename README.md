@@ -51,7 +51,7 @@ This repository is the **V1 MVP**, built for a Mobile Application Development co
 - My Bookings (Upcoming / Completed / Cancelled) in real time, booking details, cancel booking
 - 5-star review after a completed job; the provider's average rating updates automatically
 - Saved providers and recently viewed (SQLite)
-- Export booking history as **booking_history.csv** (preview, share or save to Downloads)
+- Export booking history as **booking_history.csv** (preview, share or save to Downloads → **Open** it straight from the app)
 
 **Provider**
 - First-time profile setup, later editable: photo (camera/gallery), title, category, skills, experience, price + unit, description, service location (map picker or GPS + reverse geocoding), working days and hours, availability switch, verification status
@@ -59,6 +59,7 @@ This repository is the **V1 MVP**, built for a Mobile Application Development co
 - Dashboard: pending / confirmed / completed counts, rating, availability switch, newest requests with Accept/Decline
 - Requests tab (Accept / Decline) and Jobs tab (Accepted → *Mark as Completed*, Completed, Closed)
 - Portfolio manager: camera or gallery → preview → upload to Firebase Storage; tap to view, long-press to delete
+- **Earnings**: dashboard card with total, this month, upcoming and average per job; tap it for a 6-month breakdown and export **earnings_report.csv** (also shown on the Profile tab)
 - Export profile as **provider_profile.txt**, export job history as CSV, share profile
 
 **Admin** (basic, inside the app)
@@ -268,7 +269,7 @@ No storage permission is needed. The gallery uses `ACTION_GET_CONTENT`, and expo
 | **Camera (implicit intent)** | `ImagePickerHelper` → `MediaStore.ACTION_IMAGE_CAPTURE` + `FileProvider`, with the runtime CAMERA permission |
 | **Gallery (implicit intent)** | `ImagePickerHelper` → `Intent.ACTION_GET_CONTENT` (`image/*`) |
 | **Image handling** | `ImageUtils` (EXIF rotation, down-scaling, JPEG compression), Glide loading, preview dialog before upload |
-| **File handling (.txt / .csv)** | `FileUtils` writes `booking_history.csv`, `job_history.csv` and `provider_profile.txt`, reads them back for a preview, then shares (`ACTION_SEND`) or saves them to Downloads |
+| **File handling (.txt / .csv)** | `FileUtils` writes `booking_history.csv`, `job_history.csv` and `provider_profile.txt`, reads them back for a preview, then shares (`ACTION_SEND`) or saves them to **Downloads/SkillConnect** (MediaStore) and opens them with `ACTION_VIEW`, falling back to an in-app table viewer when no CSV app is installed |
 | **Google Maps** | `MapActivity` (Nearby Providers, markers, info card), `LocationPickerActivity` (choose service location) |
 | **Location** | `LocationUtils`: runtime permissions, `FusedLocationProviderClient.getCurrentLocation`, distance calculation, reverse geocoding with `Geocoder` |
 | **SQLite** | `database/DatabaseHelper` (`SQLiteOpenHelper`) with tables `favorite_providers`, `recently_viewed` and `recent_searches`. **INSERT** (save provider, recently viewed, new search), **SELECT** (Saved tab, recommendations, recent searches), **UPDATE** (refresh the saved snapshot, bump search time), **DELETE** (unsave, clear history). |

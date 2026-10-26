@@ -320,7 +320,29 @@ public final class DemoData {
         list.add(booking("b7", "demo_customer_sid", "Siddharth Rao", "9876500004", rahul, "Fan Installation",
                 "Install two ceiling fans in bedrooms.",
                 now + 3 * day, "15:00", Booking.STATUS_ACCEPTED, "Marol, Andheri East"));
+        // Rahul's past jobs, so the provider earnings summary has history
+        list.add(withPrice(booking("b8", "demo_customer_karan", "Karan Malhotra", "9876500002", rahul, "Wiring Check",
+                "Full house wiring inspection before Diwali.",
+                now - 8 * day, "12:00", Booking.STATUS_COMPLETED, "Andheri East, Mumbai"), 800));
+        list.add(withPrice(booking("b9", "demo_customer_aditi", "Aditi Sen", "9876500003", rahul, "Inverter Installation",
+                "Install a new inverter and battery.",
+                now - 21 * day, "10:30", Booking.STATUS_COMPLETED, "Jogeshwari, Mumbai"), 1200));
+        list.add(withPrice(booking("b10", "demo_customer_sid", "Siddharth Rao", "9876500004", rahul, "Switchboard Repair",
+                "Two switchboards not working in the hall.",
+                now - 35 * day, "16:00", Booking.STATUS_COMPLETED, "Marol, Andheri East"), 450));
+        list.add(withPrice(booking("b11", "demo_customer_karan", "Karan Malhotra", "9876500002", rahul, "Fan Installation",
+                "Install a ceiling fan in the bedroom.",
+                now - 52 * day, "11:00", Booking.STATUS_COMPLETED, "Andheri East, Mumbai"), 600));
+        list.add(withPrice(booking("b12", "demo_customer_aditi", "Aditi Sen", "9876500003", rahul, "Geyser Wiring",
+                "New geyser point in the bathroom.",
+                now - 75 * day, "09:00", Booking.STATUS_COMPLETED, "Jogeshwari, Mumbai"), 950));
         return list;
+    }
+
+    private static Booking withPrice(Booking b, double price) {
+        b.setPrice(price);
+        b.setReviewed(true);
+        return b;
     }
 
     private static Booking booking(String id, String customerId, String customerName, String customerPhone,

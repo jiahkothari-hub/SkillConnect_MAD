@@ -48,6 +48,11 @@ public final class ImageUtils {
      * max 1280px and returns JPEG bytes. Call from a background thread.
      */
     public static byte[] compressImage(Context context, Uri uri) throws IOException {
+        return compressImage(context, uri, MAX_DIMENSION, JPEG_QUALITY);
+    }
+
+    /** Same as {@link #compressImage(Context, Uri)} with a custom size and JPEG quality. */
+    public static byte[] compressImage(Context context, Uri uri, int maxDimension, int quality) throws IOException {
         BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
         try (InputStream in = context.getContentResolver().openInputStream(uri)) {
@@ -56,7 +61,7 @@ public final class ImageUtils {
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw new IOException("Not an image");
 
         int sample = 1;
-        while (bounds.outWidth / (sample * 2) >= MAX_DIMENSION || bounds.outHeight / (sample * 2) >= MAX_DIMENSION) {
+        while (bounds.outWidth / (sample * 2) >= maxDimension || bounds.outHeight / (sample * 2) >= maxDimension) {
             sample *= 2;
         }
         BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -80,7 +85,7 @@ public final class ImageUtils {
             // No EXIF data – keep rotation 0
         }
 
-        float scale = Math.min(1f, (float) MAX_DIMENSION / Math.max(bitmap.getWidth(), bitmap.getHeight()));
+        float scale = Math.min(1f, (float) maxDimension / Math.max(bitmap.getWidth(), bitmap.getHeight()));
         if (scale < 1f || rotation != 0) {
             Matrix m = new Matrix();
             m.postScale(scale, scale);
@@ -90,7 +95,7 @@ public final class ImageUtils {
             bitmap = transformed;
         }
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, out);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, out);
         bitmap.recycle();
         return out.toByteArray();
     }

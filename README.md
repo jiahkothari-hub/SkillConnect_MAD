@@ -118,7 +118,7 @@ The app has one interface, `data/AppRepository.java`, with two implementations. 
 | Class | `DemoRepository` | `FirebaseRepository` → `FirebaseAuthHelper`, `FirestoreHelper`, `StorageHelper` |
 | Accounts | Fixed fictional accounts (password `demo123`) | Firebase Authentication |
 | Data | Fictional sample data in memory; resets when the app process restarts | Cloud Firestore, shared across devices |
-| Images | Compressed and saved in app-private storage | Uploaded to Firebase Storage |
+| Images | Compressed and saved in app-private storage | Uploaded to Firebase Storage (or stored as a small inline copy in Firestore if Storage is not enabled) |
 | Indicator | Yellow *Demo mode* banner on login; profile footer says "Demo mode" | Profile footer says "Connected to Firebase" |
 
 Demo mode exists so the UI can be explored and presented before Firebase is set up. It does **not** pretend to be Firebase: nothing is sent to a server. SQLite, file export, maps, camera and notifications work the same in both modes.
@@ -149,8 +149,10 @@ Firebase console → **Build → Authentication → Get started → Sign-in meth
 3. No composite indexes are needed. Every query uses a single equality filter and sorting happens on the device.
 
 ### 6.4 Firebase Storage
-1. **Build → Storage → Get started** (depending on your Firebase plan, Storage may require the Blaze plan for new projects).
+1. **Build → Storage → Get started**. New Firebase projects (buckets ending in `firebasestorage.app`) need the **Blaze** plan for Storage.
 2. Open the **Rules** tab, paste **`firebase/storage.rules`** and **Publish**.
+
+**Staying on the free Spark plan?** Skip this step. When an upload to Storage fails, the app automatically saves a smaller copy of the photo (max 480 px) inside the Firestore document instead, so profile photos, portfolio images and chat photos still work.
 
 ### 6.5 Cloud Messaging (optional)
 - The app already requests notification permission, registers `SkillConnectMessagingService` and saves each user's FCM token in `users/{uid}.fcmToken`.

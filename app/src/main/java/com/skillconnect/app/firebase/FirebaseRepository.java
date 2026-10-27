@@ -4,6 +4,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Base64;
+import android.util.Log;
 
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -31,6 +33,12 @@ import java.util.concurrent.Executors;
  * This is the real client–server implementation used in production.
  */
 public class FirebaseRepository implements AppRepository {
+
+    private static final String TAG = "FirebaseRepository";
+    // Inline (Firestore) fallback photos stay small: Firestore documents are limited to 1 MB
+    private static final int INLINE_MAX_DIMENSION = 480;
+    private static final int INLINE_JPEG_QUALITY = 60;
+    private static final int INLINE_MAX_BYTES = 120 * 1024;
 
     private final FirebaseAuthHelper authHelper = new FirebaseAuthHelper();
     private final FirestoreHelper firestore = new FirestoreHelper();
@@ -244,14 +252,44 @@ public class FirebaseRepository implements AppRepository {
 
     // ---------------------------------------------------------------- Images
 
-    /** Compresses on a background thread, then uploads to Firebase Storage. */
+    /**
+     * Compresses on a background thread, then uploads to Firebase Storage. New Firebase projects only get
+     * Storage on the Blaze plan, so if the upload fails a small copy of the photo is stored inline in
+     * Firestore instead (a data: URL that Glide displays like any other image URL).
+     */
     private void compressAndUpload(Context context, Uri uri, String path, Callback<String> callback) {
         executor.execute(() -> {
             try {
                 byte[] bytes = ImageUtils.compressImage(context, uri);
-                mainHandler.post(() -> storage.uploadImage(path, bytes, callback));
+                mainHandler.post(() -> storage.uploadImage(path, bytes, new Callback<String>() {
+                    @Override
+                    public void onSuccess(String url) {
+                        callback.onSuccess(url);
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        Log.w(TAG, "Storage upload failed, storing image inline: " + message);
+                        storeInline(context, uri, callback);
+                    }
+                }));
             } catch (Exception e) {
                 mainHandler.post(() -> callback.onError("Could not read this image. Please try another photo."));
+            }
+        });
+    }
+
+    private void storeInline(Context context, Uri uri, Callback<String> callback) {
+        executor.execute(() -> {
+            try {
+                byte[] small = ImageUtils.compressImage(context, uri, INLINE_MAX_DIMENSION, INLINE_JPEG_QUALITY);
+                if (small.length > INLINE_MAX_BYTES) {
+                    small = ImageUtils.compressImage(context, uri, INLINE_MAX_DIMENSION / 2, INLINE_JPEG_QUALITY);
+                }
+                String dataUrl = "data:image/jpeg;base64," + Base64.encodeToString(small, Base64.NO_WRAP);
+                mainHandler.post(() -> callback.onSuccess(dataUrl));
+            } catch (Exception e) {
+                mainHandler.post(() -> callback.onError("Could not upload the photo. Please try again."));
             }
         });
     }

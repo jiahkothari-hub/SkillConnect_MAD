@@ -151,6 +151,7 @@ public final class DemoData {
         p.setPriceUnit(unit);
         p.setAverageRating(rating);
         p.setReviewCount(reviews);
+        p.setRatingTotal(rating * reviews);
         p.setExperienceYears(experience);
         p.setAvailable(available);
         p.setVerified(verified);

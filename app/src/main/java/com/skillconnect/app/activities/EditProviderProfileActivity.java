@@ -37,6 +37,7 @@ import com.skillconnect.app.utils.DateTimeUtils;
 import com.skillconnect.app.utils.ImagePickerHelper;
 import com.skillconnect.app.utils.ImageUtils;
 import com.skillconnect.app.utils.LocationUtils;
+import com.skillconnect.app.utils.NavigationUtils;
 import com.skillconnect.app.utils.StateView;
 import com.skillconnect.app.utils.UiUtils;
 import com.skillconnect.app.utils.ValidationUtils;
@@ -126,7 +127,11 @@ public class EditProviderProfileActivity extends AppCompatActivity {
     private void bindViews() {
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle(firstSetup ? "Set up your profile" : getString(R.string.edit_profile));
-        toolbar.setNavigationOnClickListener(v -> finish());
+        // During first-time setup there is no previous screen: the back arrow offers to log out instead
+        toolbar.setNavigationOnClickListener(v -> {
+            if (firstSetup) NavigationUtils.confirmLogout(this);
+            else finish();
+        });
         findViewById(R.id.tvSetupIntro).setVisibility(firstSetup ? View.VISIBLE : View.GONE);
 
         state = new StateView(findViewById(R.id.editState));
@@ -225,7 +230,7 @@ public class EditProviderProfileActivity extends AppCompatActivity {
 
             @Override
             public void onError(String message) {
-                if ("Provider not found".equals(message)) {
+                if (AppRepository.PROVIDER_NOT_FOUND.equals(message)) {
                     provider = new Provider();
                     provider.setProviderId(user.getUserId());
                     provider.setCreatedAt(System.currentTimeMillis());

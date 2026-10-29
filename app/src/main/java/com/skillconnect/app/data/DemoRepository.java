@@ -207,7 +207,7 @@ public class DemoRepository implements AppRepository {
     @Override
     public void getProvider(String providerId, Callback<Provider> callback) {
         Provider p = findProvider(providerId);
-        if (p == null) fail(callback, "Provider not found");
+        if (p == null) fail(callback, PROVIDER_NOT_FOUND);
         else deliver(callback, p);
     }
 
@@ -218,6 +218,8 @@ public class DemoRepository implements AppRepository {
             // keep fields the provider cannot change themselves
             provider.setAverageRating(existing.getAverageRating());
             provider.setReviewCount(existing.getReviewCount());
+            provider.setRatingTotal(existing.getRatingTotal());
+            provider.setLastReviewId(existing.getLastReviewId());
             provider.setVerified(existing.isVerified());
             provider.setActive(existing.isActive());
             providers.set(providers.indexOf(existing), provider);
@@ -394,9 +396,11 @@ public class DemoRepository implements AppRepository {
         booking.setReviewed(true);
         Provider p = findProvider(review.getProviderId());
         if (p != null) {
-            double total = p.getAverageRating() * p.getReviewCount() + review.getRating();
+            double total = p.getRatingTotal() + review.getRating();
+            p.setRatingTotal(total);
             p.setReviewCount(p.getReviewCount() + 1);
             p.setAverageRating(Math.round(total / p.getReviewCount() * 10.0) / 10.0);
+            p.setLastReviewId(review.getReviewId());
         }
         deliver(callback, null);
         notifyBookingListeners();

@@ -1,5 +1,11 @@
 package com.skillconnect.app.firebase;
 
+import android.os.Handler;
+import android.os.Looper;
+
+import androidx.annotation.Nullable;
+
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -12,6 +18,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.firestore.Transaction;
 import com.google.firebase.firestore.WriteBatch;
+import com.skillconnect.app.data.AppRepository;
 import com.skillconnect.app.data.Callback;
 import com.skillconnect.app.data.CategoryData;
 import com.skillconnect.app.models.Booking;
@@ -28,6 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * All Cloud Firestore reads and writes.
@@ -53,6 +61,30 @@ public class FirestoreHelper {
 
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
 
+    /**
+     * Reports a write's result once the server confirms it. Firestore keeps unconfirmed writes waiting
+     * indefinitely when it can't reach the database, so after this long the user gets a clear error
+     * instead of an endless spinner (the write still syncs later if the connection comes back).
+     */
+    private static final long WRITE_TIMEOUT_MS = 20_000;
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
+
+    private static <T> void whenWritten(Task<?> write, T result, @Nullable Callback<T> callback) {
+        AtomicBoolean done = new AtomicBoolean();
+        Runnable timeout = () -> {
+            if (done.compareAndSet(false, true) && callback != null) {
+                callback.onError(FirebaseErrors.DATABASE_UNREACHABLE);
+            }
+        };
+        MAIN.postDelayed(timeout, WRITE_TIMEOUT_MS);
+        write.addOnCompleteListener(task -> {
+            MAIN.removeCallbacks(timeout);
+            if (!done.compareAndSet(false, true) || callback == null) return;
+            if (task.isSuccessful()) callback.onSuccess(result);
+            else callback.onError(FirebaseErrors.message(task.getException()));
+        });
+    }
+
     /** Keeps a local cache so previously loaded data is visible offline. */
     public static void enableOfflinePersistence() {
         try {
@@ -74,19 +106,11 @@ public class FirestoreHelper {
     }
 
     public void saveUser(User user, Callback<Void> callback) {
-        db.collection(USERS).document(user.getUserId()).set(user)
-                .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(db.collection(USERS).document(user.getUserId()).set(user), null, callback);
     }
 
     public void updateUserField(String userId, String field, Object value, Callback<Void> callback) {
-        db.collection(USERS).document(userId).update(field, value)
-                .addOnSuccessListener(unused -> {
-                    if (callback != null) callback.onSuccess(null);
-                })
-                .addOnFailureListener(e -> {
-                    if (callback != null) callback.onError(FirebaseErrors.message(e));
-                });
+        whenWritten(db.collection(USERS).document(userId).update(field, value), null, callback);
     }
 
     public void getAllUsers(Callback<List<User>> callback) {
@@ -120,21 +144,20 @@ public class FirestoreHelper {
         db.collection(PROVIDERS).document(providerId).get()
                 .addOnSuccessListener(doc -> {
                     if (doc.exists()) callback.onSuccess(doc.toObject(Provider.class));
-                    else callback.onError("Provider not found");
+                    else callback.onError(AppRepository.PROVIDER_NOT_FOUND);
                 })
                 .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
     }
 
     /** Creates the initial provider document right after a provider registers. */
     public void createProvider(Provider provider, Callback<Void> callback) {
-        db.collection(PROVIDERS).document(provider.getProviderId()).set(provider)
-                .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(db.collection(PROVIDERS).document(provider.getProviderId()).set(provider), null, callback);
     }
 
     /**
      * Saves only the fields a provider is allowed to edit. Rating, review count,
-     * verification and active status are protected by the security rules.
+     * verification and active status are protected by the security rules; they are only
+     * set (to their starting values) when the listing is created.
      */
     public void saveProviderProfile(Provider p, Callback<Void> callback) {
         Map<String, Object> data = new HashMap<>();
@@ -157,15 +180,28 @@ public class FirestoreHelper {
         data.put("phone", p.getPhone());
         data.put("email", p.getEmail());
         data.put("profileImage", p.getProfileImage());
-        db.collection(PROVIDERS).document(p.getProviderId()).set(data, SetOptions.merge())
-                .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        DocumentReference ref = db.collection(PROVIDERS).document(p.getProviderId());
+        ref.get().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                callback.onError(FirebaseErrors.message(task.getException()));
+                return;
+            }
+            if (task.getResult() == null || !task.getResult().exists()) {
+                // First save creates the listing: it must be active (customers only see active providers)
+                // and start unverified with no ratings, as the security rules require.
+                data.put("active", true);
+                data.put("verified", false);
+                data.put("averageRating", 0.0);
+                data.put("reviewCount", 0);
+                data.put("ratingTotal", 0.0);
+                data.put("createdAt", p.getCreatedAt() > 0 ? p.getCreatedAt() : System.currentTimeMillis());
+            }
+            whenWritten(ref.set(data, SetOptions.merge()), null, callback);
+        });
     }
 
     public void updateProviderField(String providerId, String field, Object value, Callback<Void> callback) {
-        db.collection(PROVIDERS).document(providerId).update(field, value)
-                .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(db.collection(PROVIDERS).document(providerId).update(field, value), null, callback);
     }
 
     // -------------------------------------------------------------- portfolio
@@ -185,15 +221,11 @@ public class FirestoreHelper {
     }
 
     public void addPortfolioItem(PortfolioItem item, Callback<PortfolioItem> callback) {
-        db.collection(PORTFOLIO).document(item.getPortfolioId()).set(item)
-                .addOnSuccessListener(unused -> callback.onSuccess(item))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(db.collection(PORTFOLIO).document(item.getPortfolioId()).set(item), item, callback);
     }
 
     public void deletePortfolioItem(String portfolioId, Callback<Void> callback) {
-        db.collection(PORTFOLIO).document(portfolioId).delete()
-                .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(db.collection(PORTFOLIO).document(portfolioId).delete(), null, callback);
     }
 
     // --------------------------------------------------------------- bookings
@@ -201,9 +233,7 @@ public class FirestoreHelper {
     public void createBooking(Booking booking, Callback<Booking> callback) {
         DocumentReference ref = db.collection(BOOKINGS).document();
         booking.setBookingId(ref.getId());
-        ref.set(booking)
-                .addOnSuccessListener(unused -> callback.onSuccess(booking))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(ref.set(booking), booking, callback);
     }
 
     public void getBooking(String bookingId, Callback<Booking> callback) {
@@ -234,10 +264,8 @@ public class FirestoreHelper {
     }
 
     public void updateBookingStatus(String bookingId, String status, Callback<Void> callback) {
-        db.collection(BOOKINGS).document(bookingId)
-                .update("status", status, "updatedAt", System.currentTimeMillis())
-                .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(db.collection(BOOKINGS).document(bookingId)
+                .update("status", status, "updatedAt", System.currentTimeMillis()), null, callback);
     }
 
     // ---------------------------------------------------------------- reviews
@@ -253,8 +281,16 @@ public class FirestoreHelper {
     }
 
     /**
-     * Uses a transaction so the review, the booking's "reviewed" flag and the
-     * provider's average rating are always updated together.
+     * Uses a transaction so the review, the booking's "reviewed" flag and the provider's rating
+     * are always updated together. Documents and fields written:
+     * <ul>
+     *   <li>reviews/{bookingId}: the review (one per booking, never updated)</li>
+     *   <li>bookings/{bookingId}: reviewed = true, updatedAt</li>
+     *   <li>providers/{providerId}: reviewCount + 1, ratingTotal + rating, averageRating and
+     *       lastReviewId = bookingId</li>
+     * </ul>
+     * The security rules check every one of these values against the new review, so a customer
+     * can't change a provider's rating except by exactly one honest review per completed booking.
      */
     public void submitReview(Review review, Callback<Void> callback) {
         DocumentReference bookingRef = db.collection(BOOKINGS).document(review.getBookingId());
@@ -266,6 +302,11 @@ public class FirestoreHelper {
         db.runTransaction((Transaction.Function<Void>) tx -> {
             DocumentSnapshot booking = tx.get(bookingRef);
             DocumentSnapshot provider = tx.get(providerRef);
+            if (!booking.exists() || !review.getCustomerId().equals(booking.getString("customerId"))
+                    || !review.getProviderId().equals(booking.getString("providerId"))) {
+                throw new FirebaseFirestoreException("This booking can't be reviewed from this account.",
+                        FirebaseFirestoreException.Code.FAILED_PRECONDITION);
+            }
             if (!Booking.STATUS_COMPLETED.equals(booking.getString("status"))) {
                 throw new FirebaseFirestoreException("Only completed bookings can be reviewed.",
                         FirebaseFirestoreException.Code.FAILED_PRECONDITION);
@@ -276,14 +317,19 @@ public class FirestoreHelper {
             }
             Double avg = provider.getDouble("averageRating");
             Long count = provider.getLong("reviewCount");
+            Double total = provider.getDouble("ratingTotal");
             double oldAvg = avg != null ? avg : 0;
             long oldCount = count != null ? count : 0;
+            // Older listings have no ratingTotal yet: the rules use the same fallback (average × count)
+            double oldTotal = total != null ? total : oldAvg * oldCount;
             long newCount = oldCount + 1;
-            double newAvg = Math.round(((oldAvg * oldCount) + review.getRating()) / newCount * 10.0) / 10.0;
+            double newTotal = oldTotal + review.getRating();
+            double newAvg = Math.round(newTotal / newCount * 10.0) / 10.0;
 
             tx.set(reviewRef, review);
             tx.update(bookingRef, "reviewed", true, "updatedAt", System.currentTimeMillis());
-            tx.update(providerRef, "averageRating", newAvg, "reviewCount", newCount);
+            tx.update(providerRef, "averageRating", newAvg, "reviewCount", newCount,
+                    "ratingTotal", newTotal, "lastReviewId", review.getReviewId());
             return null;
         })
                 .addOnSuccessListener(unused -> callback.onSuccess(null))
@@ -316,9 +362,7 @@ public class FirestoreHelper {
                         callback.onSuccess(doc.toObject(ChatThread.class));
                     } else {
                         template.setUpdatedAt(System.currentTimeMillis());
-                        ref.set(template)
-                                .addOnSuccessListener(unused -> callback.onSuccess(template))
-                                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+                        whenWritten(ref.set(template), template, callback);
                     }
                 })
                 .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
@@ -333,9 +377,13 @@ public class FirestoreHelper {
                 .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
     }
 
-    /** Conversations where the user is a participant (single array-contains filter, no index needed). */
-    public ListenerRegistration listenToChats(String userId, Callback<List<ChatThread>> callback) {
-        return db.collection(CHATS).whereArrayContains("participants", userId)
+    /**
+     * Conversations of one user: {field} is "customerId" for customers and "providerId" for providers.
+     * An equality filter lets the security rules prove every result belongs to the user (an
+     * array-contains query on "participants" is rejected by the rules before any data is read).
+     */
+    public ListenerRegistration listenToChats(String field, String userId, Callback<List<ChatThread>> callback) {
+        return db.collection(CHATS).whereEqualTo(field, userId)
                 .addSnapshotListener((QuerySnapshot snap, FirebaseFirestoreException e) -> {
                     if (e != null) {
                         callback.onError(FirebaseErrors.message(e));
@@ -375,9 +423,7 @@ public class FirestoreHelper {
                 "lastSenderId", message.getSenderId(),
                 "updatedAt", message.getCreatedAt(),
                 fromCustomer ? "unreadProvider" : "unreadCustomer", FieldValue.increment(1));
-        batch.commit()
-                .addOnSuccessListener(unused -> callback.onSuccess(null))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(batch.commit(), null, callback);
     }
 
     public void markChatRead(ChatThread chat, String userId) {
@@ -408,8 +454,6 @@ public class FirestoreHelper {
             data.put("order", order++);
             batch.set(db.collection(CATEGORIES).document(c.getId()), data);
         }
-        batch.commit()
-                .addOnSuccessListener(unused -> callback.onSuccess(providers.size()))
-                .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
+        whenWritten(batch.commit(), providers.size(), callback);
     }
 }

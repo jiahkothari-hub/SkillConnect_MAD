@@ -186,7 +186,7 @@ public class ProfileFragment extends Fragment implements BookingsHost.BookingsLi
 
             @Override
             public void onError(String message) {
-                if (isAdded()) UiUtils.toast(requireContext(), message);
+                if (isAdded() && !AppRepository.PROVIDER_NOT_FOUND.equals(message)) UiUtils.toast(requireContext(), message);
             }
         });
     }

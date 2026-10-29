@@ -12,6 +12,13 @@ import com.google.firebase.storage.StorageException;
 public final class FirebaseErrors {
 
     public static final String NETWORK = "Something went wrong. Check your connection and try again.";
+    /**
+     * Firebase Authentication works but Cloud Firestore can't be reached. With a working internet
+     * connection this almost always means the Firestore database hasn't been created for the project.
+     */
+    public static final String DATABASE_UNREACHABLE = "Can't reach the SkillConnect database. Check your internet "
+            + "connection. If it's working, Cloud Firestore may not be set up yet (Firebase console → "
+            + "Firestore Database → Create database).";
 
     private FirebaseErrors() {
     }
@@ -31,7 +38,7 @@ public final class FirebaseErrors {
                     return "You don't have permission to do that.";
                 case UNAVAILABLE:
                 case DEADLINE_EXCEEDED:
-                    return NETWORK;
+                    return DATABASE_UNREACHABLE;
                 case FAILED_PRECONDITION:
                 case ABORTED:
                     return e.getMessage() != null ? e.getMessage() : NETWORK;

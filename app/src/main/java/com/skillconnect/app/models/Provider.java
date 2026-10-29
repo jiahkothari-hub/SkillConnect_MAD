@@ -33,6 +33,10 @@ public class Provider {
     private boolean verified;
     private double averageRating;
     private int reviewCount;
+    // Sum of all review ratings and the last review counted. The security rules use them to check
+    // that each new review changes the rating by exactly its own score (see firestore.rules).
+    private double ratingTotal;
+    private String lastReviewId;
     private boolean active = true;      // admin can deactivate a listing
     private long createdAt;
 
@@ -104,6 +108,10 @@ public class Provider {
     public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
     public int getReviewCount() { return reviewCount; }
     public void setReviewCount(int reviewCount) { this.reviewCount = reviewCount; }
+    public double getRatingTotal() { return ratingTotal; }
+    public void setRatingTotal(double ratingTotal) { this.ratingTotal = ratingTotal; }
+    public String getLastReviewId() { return lastReviewId; }
+    public void setLastReviewId(String lastReviewId) { this.lastReviewId = lastReviewId; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
     public long getCreatedAt() { return createdAt; }

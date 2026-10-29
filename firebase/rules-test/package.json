@@ -1,0 +1,13 @@
+{
+  "name": "skillconnect-rules-test",
+  "private": true,
+  "description": "Replays the app's Firestore reads/writes against firestore.rules in the Firestore emulator",
+  "scripts": {
+    "test": "firebase emulators:exec --only firestore --project demo-skillconnect \"node test.js ../firestore.rules\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.0",
+    "firebase": "^10.14.0",
+    "firebase-tools": "^13.0.0"
+  }
+}

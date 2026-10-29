@@ -25,6 +25,9 @@ import java.util.List;
  */
 public interface AppRepository {
 
+    /** Error message used when a provider document doesn't exist (e.g. a provider who hasn't finished setup). */
+    String PROVIDER_NOT_FOUND = "Provider not found";
+
     // ----- Authentication & users -----
     boolean isLoggedIn();
 

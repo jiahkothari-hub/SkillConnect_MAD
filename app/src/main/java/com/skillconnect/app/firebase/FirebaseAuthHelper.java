@@ -36,6 +36,17 @@ public class FirebaseAuthHelper {
                 .addOnFailureListener(e -> callback.onError(FirebaseErrors.message(e)));
     }
 
+    /**
+     * Removes the Authentication account that was just created when the rest of the registration
+     * failed, so the person can register again with the same email.
+     */
+    public void deleteCurrentUser() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user != null) {
+            user.delete().addOnCompleteListener(task -> auth.signOut());
+        }
+    }
+
     public void logout() {
         auth.signOut();
     }

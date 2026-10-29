@@ -85,8 +85,10 @@ public class FirebaseRepository implements AppRepository {
             @Override
             public void onSuccess(User user) {
                 if (user == null) {
-                    authHelper.logout();
-                    callback.onError("Your profile could not be found. Please register again.");
+                    // Signed in, but registration never finished saving the profile: remove the
+                    // half-created account so the same email can be used to register again.
+                    authHelper.deleteCurrentUser();
+                    callback.onError("Your registration didn't finish. Please create your account again.");
                     return;
                 }
                 if (!user.isActive()) {
@@ -123,7 +125,7 @@ public class FirebaseRepository implements AppRepository {
 
                     @Override
                     public void onError(String message) {
-                        callback.onError(message);
+                        failRegistration(message, callback);
                     }
                 });
             }
@@ -153,9 +155,18 @@ public class FirebaseRepository implements AppRepository {
 
             @Override
             public void onError(String message) {
-                callback.onError(message);
+                // The account itself is saved; the provider setup screen creates the listing on its first save
+                Log.w(TAG, "Provider listing not created at registration: " + message);
+                finishRegistration(user, callback);
             }
         });
+    }
+
+    /** The Auth account exists but its profile couldn't be saved: undo it so registering again works. */
+    private void failRegistration(String message, Callback<User> callback) {
+        cachedUser = null;
+        authHelper.deleteCurrentUser();
+        callback.onError(message);
     }
 
     private void finishRegistration(User user, Callback<User> callback) {
@@ -433,7 +444,9 @@ public class FirebaseRepository implements AppRepository {
             callback.onError("Not logged in");
             return () -> { };
         }
-        ListenerRegistration registration = firestore.listenToChats(uid, callback);
+        // Customers' chats are found by customerId, providers' by providerId (see firestore.rules)
+        String field = cachedUser != null && cachedUser.isProvider() ? "providerId" : "customerId";
+        ListenerRegistration registration = firestore.listenToChats(field, uid, callback);
         return registration::remove;
     }
 

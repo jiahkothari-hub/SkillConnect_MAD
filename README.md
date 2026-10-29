@@ -145,8 +145,14 @@ Firebase console → **Build → Authentication → Get started → Sign-in meth
 
 ### 6.3 Cloud Firestore
 1. **Build → Firestore Database → Create database**. Pick a location near your users (e.g. `asia-south1` Mumbai) and start in **production mode**.
-2. Open the **Rules** tab, paste the contents of **`firebase/firestore.rules`** and click **Publish**.
+2. Open the **Rules** tab, replace everything with the contents of **`firebase/firestore.rules`** and click **Publish**. Re-publish whenever this file changes.
+   - To test the rules locally (Node.js + Java needed): `cd firebase/rules-test && npm install && npm test` replays every read/write the app makes, plus attack cases, in the Firestore emulator.
+   - Chats are listed with `customerId == uid` (customers) or `providerId == uid` (providers); the rules only accept these equality queries.
+   - Ratings are tamper-proof without a server: a review transaction must create `reviews/{bookingId}` for the customer's own completed, unreviewed booking, set the booking's `reviewed` flag, and raise the provider's `reviewCount` by 1 and `ratingTotal` by exactly that rating (`averageRating` must match). The rules check all of it, so each booking can be reviewed once and nobody can edit a rating directly. (Moderating or deleting reviews later would need an admin or a Cloud Function to recalculate the totals.)
 3. No composite indexes are needed. Every query uses a single equality filter and sorting happens on the device.
+4. Keep the database ID as **`(default)`** and choose **Native mode**. The app connects to the default database only.
+
+**Check it worked:** after registering in the app, the Firestore **Data** tab should show a `users` collection with your account. If it stays empty, the app can't reach Firestore (see 6.7).
 
 ### 6.4 Firebase Storage
 1. **Build → Storage → Get started**. New Firebase projects (buckets ending in `firebasestorage.app`) need the **Blaze** plan for Storage.
@@ -171,6 +177,18 @@ Firebase console → **Build → Authentication → Get started → Sign-in meth
 
 Real providers appear in search as soon as they register and complete their profile.
 
+### 6.7 How real accounts work, and troubleshooting
+- **Provider sign-up:** Register → choose *Offer my skill* → the **Set up your profile** screen asks for the main service, category, skills, experience, starting price, description, service location (current location or *Choose on map*) and working days/hours. Saving it creates the listing in `providers/{uid}`, and customers can find, chat with and book that provider straight away.
+- If a provider logs in without a finished profile (for example the setup was skipped), the app opens the setup screen again before the dashboard.
+- **Bookings** a customer makes appear instantly on the provider's dashboard and Requests tab (real-time listener). Accepting and completing them updates the customer's screen and the provider's earnings.
+
+| Problem | Cause and fix |
+|---|---|
+| *Create account* keeps loading, or "Can't reach the SkillConnect database" | Firebase Authentication works but Cloud Firestore can't be reached. Almost always the Firestore database was never created: do step 6.3 (database ID `(default)`, Native mode). Android Studio's **Logcat** (filter `Firestore`) shows the exact reason, e.g. *"The database (default) does not exist"*. After a timeout the app removes the half-created login, so you can register again with the same email. |
+| "You don't have permission to do that." | The security rules weren't published. Paste `firebase/firestore.rules` into Firestore → Rules → **Publish**. |
+| "Your registration didn't finish" when logging in | The account was created while Firestore was unreachable. It has now been removed; register again. |
+| Maps show a grey screen | The Maps key is missing or restricted. See section 7. |
+
 ---
 
 ## 7. Google Maps API key
@@ -178,7 +196,7 @@ Real providers appear in search as soon as they register and complete their prof
 1. Open <https://console.cloud.google.com> and select the Google Cloud project Firebase created (or any other project).
 2. **APIs & Services → Library → Maps SDK for Android → Enable.**
 3. **APIs & Services → Credentials → Create credentials → API key.** Restrict it to *Android apps*, package `com.skillconnect.app` plus your debug SHA-1 (run `./gradlew signingReport`).
-4. Add the key to **`local.properties`** in the project root (this file is git-ignored):
+4. Add the key to **`local.properties`** in the project root (this file is git-ignored, so the key never ends up on GitHub). Android Studio already created this file; add the line below under `sdk.dir`:
    ```properties
    MAPS_API_KEY=AIza...your_key...
    ```
@@ -208,7 +226,7 @@ Relationships use document IDs instead of copying large amounts of data. Booking
 | Collection | Document ID | Fields |
 |---|---|---|
 | `users` | `{userId}` (Auth UID) | userId, name, email, phone, role (CUSTOMER / PROVIDER / ADMIN), profileImage, address, latitude, longitude, fcmToken, active, createdAt |
-| `providers` | `{providerId}` = userId | providerId, name, title, category, skills[], experienceYears, description, startingPrice, priceUnit, latitude, longitude, address, availableDays[], availableFrom, availableTo, available, phone, email, profileImage, verified, averageRating, reviewCount, active, createdAt |
+| `providers` | `{providerId}` = userId | providerId, name, title, category, skills[], experienceYears, description, startingPrice, priceUnit, latitude, longitude, address, availableDays[], availableFrom, availableTo, available, phone, email, profileImage, verified, averageRating, reviewCount, ratingTotal, lastReviewId, active, createdAt |
 | `bookings` | auto ID | bookingId, customerId, customerName, customerPhone, providerId, providerName, providerPhone, service, description, date (dd-MM-yyyy), time (HH:mm), scheduledAt, price, location, status (PENDING / ACCEPTED / REJECTED / COMPLETED / CANCELLED), reviewed, createdAt, updatedAt |
 | `reviews` | `{bookingId}` (one review per booking) | reviewId, bookingId, customerId, providerId, customerName, rating, comment, createdAt |
 | `portfolio` | auto ID | portfolioId, providerId, imageUrl, storagePath, description, timestamp |

@@ -158,7 +158,8 @@ public class ProviderDashboardFragment extends Fragment implements BookingsHost.
             public void onError(String message) {
                 if (getView() == null) return;
                 swipeRefresh.setRefreshing(false);
-                UiUtils.toast(requireContext(), message);
+                // A missing profile is handled by ProviderHomeActivity, which opens the setup screen
+                if (!AppRepository.PROVIDER_NOT_FOUND.equals(message)) UiUtils.toast(requireContext(), message);
             }
         });
     }
